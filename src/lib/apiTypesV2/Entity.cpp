@@ -37,6 +37,10 @@
 #include "parse/forbiddenChars.h"
 #include "ngsi10/QueryContextResponse.h"
 
+#if 1
+#include "common/JsonHelper.h"
+#endif
+
 #include "apiTypesV2/Entity.h"
 
 
@@ -79,6 +83,31 @@ std::string Entity::render
   bool                                 comma
 )
 {
+#if 1
+  // TESTING
+  //LM_W(("FGM: rendering entity %s", this->id.c_str()));
+
+  JsonHelper jh;
+
+  jh.addString("id", this->id);
+  jh.addString("type", this->type);
+
+  for (unsigned int ix = 0; ix < this->attributeVector.size(); ix++)
+  {
+    ContextAttribute* caP = this->attributeVector.vec[ix];
+    jh.addRaw(caP->name, caP->toJson2());
+  }
+
+  if (comma)
+  {
+    return jh.str() + ",";
+  }
+  else
+  {
+    return jh.str();
+  }
+
+#else
   if ((oe.details != "") || ((oe.reasonPhrase != "OK") && (oe.reasonPhrase != "")))
   {
     return oe.toJson();
@@ -170,6 +199,7 @@ std::string Entity::render
   }
 
   return out;
+#endif
 }
 
 

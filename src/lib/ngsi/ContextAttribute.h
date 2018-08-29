@@ -103,6 +103,7 @@ public:
                       RenderFormat                     renderFormat,
                       const std::vector<std::string>&  metadataFilter,
                       RequestType                      requestType = NoRequest);
+  std::string toJson2();
   std::string  toJsonAsValue(ApiVersion       apiVersion,
                              bool             acceptedTextPlain,
                              bool             acceptedJson,

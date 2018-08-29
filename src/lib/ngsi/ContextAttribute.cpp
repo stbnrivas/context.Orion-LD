@@ -47,6 +47,10 @@
 #include "mongoBackend/compoundValueBson.h"
 #include "mongoBackend/dbFieldEncoding.h"
 
+#if 1
+#include "common/JsonHelper.h"
+#endif
+
 using namespace mongo;
 using namespace orion;
 
@@ -763,6 +767,50 @@ std::string ContextAttribute::render
   return out;
 }
 
+
+#if 1
+std::string ContextAttribute::toJson2()
+{
+  // TESTING
+  //LM_W(("FGM: rendering attribute %s", name.c_str()));
+
+  JsonHelper jh;
+
+  jh.addString("type", type);
+
+  // Ignoring compound cases in this simple test
+  if (valueType == orion::ValueTypeNumber)
+  {
+    jh.addString("value", toString(numberValue));
+  }
+  else if (valueType == orion::ValueTypeString)
+  {
+    jh.addString("value", stringValue);
+  }
+  else if (valueType == orion::ValueTypeBoolean)
+  {
+    jh.addBool("value", boolValue);
+  }
+  else if (valueType == orion::ValueTypeNull)
+  {
+    jh.addRaw("value", "null");
+  }
+  else if (valueType == orion::ValueTypeNotGiven)
+  {
+    LM_E(("Runtime Error (value not given in compound value)"));
+  }
+  else
+  {
+    LM_E(("Runtime Error (value type not known"));
+  }
+
+  // Ignoring metadata (just a dummy JsonHelper)
+  JsonHelper js2;
+  jh.addRaw("metadata", js2.str());
+
+  return jh.str();
+}
+#endif
 
 
 /* ****************************************************************************

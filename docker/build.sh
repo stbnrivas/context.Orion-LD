@@ -5,15 +5,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 TOKEN=$1
 REV=$2
-TEST=$3
-
 HOME='/opt'
 
 DEPS=(
   'libcurl3' \
   'libssl1.1' \
 )
-
 
 DEPS_BOOST=(
  'libboost-thread' \
@@ -35,6 +32,7 @@ TOOLS=(
  'apt-transport-https' \
  'ca-certificates' \
  'cmake' \
+ 'curl' \
  'g++' \
  'gcc' \
  'git' \
@@ -42,10 +40,6 @@ TOOLS=(
  'gnupg' \
  'make' \
  'scons' \
-)
-
-TOOLS_REQ=(
-  'curl' \
 )
 
 TOOLS_TEST=(
@@ -77,8 +71,7 @@ cd ${HOME}
 apt-get -y update
 apt-get -y upgrade
 apt-get -y install --no-install-recommends \
-  ${TOOLS[@]} \
-  ${TOOLS_REQ[@]}
+  ${TOOLS[@]}
 apt-get -y install --no-install-recommends \
   ${DEPS_BUILD[@]}
 
@@ -98,21 +91,23 @@ make install
 
 ldconfig
 
-git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/kbase.git ${HOME}/kbase
-cd ${HOME}/kbase
-make
-make install
+if [ -z "${TEST}" ]; then
+  git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/kbase.git ${HOME}/kbase
+  cd ${HOME}/kbase
+  make
+  make install
 
-git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/klog.git ${HOME}/klog
-cd ${HOME}/klog
-make
-make install
+  git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/klog.git ${HOME}/klog
+  cd ${HOME}/klog
+  make
+  make install
 
-git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/kjson.git ${HOME}/kjson
-cd ${HOME}/kjson
-mkdir bin
-make
-make install
+  git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/kjson.git ${HOME}/kjson
+  cd ${HOME}/kjson
+  mkdir bin
+  make
+  make install
+fi
 
 if [ -n "${TEST}" ]; then
   apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
@@ -123,52 +118,49 @@ if [ -n "${TEST}" ]; then
     mongodb-org \
     mongodb-org-shell
 
-#  curl -L https://nexus.lab.fiware.org/repository/raw/public/storage/gmock-1.5.0.tar.bz2 | tar xjC ${HOME}/
-#  cd ${HOME}/gmock-1.5.0
-#  ./configure
-#  make
-#  make install
-#  rm -Rf ${HOME}/gmock-1.5.0
+  curl -L https://nexus.lab.fiware.org/repository/raw/public/storage/gmock-1.5.0.tar.bz2 | tar xjC ${HOME}/
+  cd ${HOME}/gmock-1.5.0
+  ./configure
+  make
+  make install
+  rm -Rf ${HOME}/gmock-1.5.0
 
   apt-get -y install --no-install-recommends \
     ${TOOLS_TEST[@]}
 fi
 
-git clone https://github.com/Fiware/context.Orion-LD.git ${HOME}/context.Orion-LD
-cd ${HOME}/context.Orion-LD
-git checkout ${REV}
-make di
-strip /usr/bin/orionld
-
-BOOST_VER=$(apt-cache policy libboost-all-dev | grep Installed | awk '{ print $2 }' | cut -c -6)
-
-apt-get -y remove --purge ${DEPS_BUILD[@]}
-apt-get autoremove -y
-
-for i in ${DEPS_BOOST[@]}; do TO_INSTALL="${TO_INSTALL} ${i}${BOOST_VER}"; done
-apt-get install -y ${TO_INSTALL[@]}
-apt-get install -y --no-install-recommends \
-  ${DEPS[@]}
-
-apt-get -y remove --purge \
-  ${TO_CLEAN[@]} \
-  ${TOOLS[@]}
-
 if [ -z "${TEST}" ]; then
+  git clone https://github.com/Fiware/context.Orion-LD.git ${HOME}/context.Orion-LD
+  cd ${HOME}/context.Orion-LD
+  git checkout ${REV}
+  make di
+  strip /usr/bin/orionld
+
+  BOOST_VER=$(apt-cache policy libboost-all-dev | grep Installed | awk '{ print $2 }' | cut -c -6)
+
+  apt-get -y remove --purge ${DEPS_BUILD[@]}
+  apt-get autoremove -y
+
+  for i in ${DEPS_BOOST[@]}; do TO_INSTALL="${TO_INSTALL} ${i}${BOOST_VER}"; done
+  apt-get install -y ${TO_INSTALL[@]}
+  apt-get install -y --no-install-recommends \
+    ${DEPS[@]}
+
   apt-get -y remove --purge \
-    ${DEPS_REQ[@]}
+    ${TO_CLEAN[@]} \
+    ${TOOLS[@]}
+  apt-get autoremove -y
+  apt-get clean autoclean
+
+  rm -Rf \
+    /usr/local/include/microhttpd.h \
+    /usr/local/lib/libmicrohttpd.* \
+    /usr/local/include/rapidjson \
+    /usr/local/include/mongo \
+    /usr/local/lib/libmongoclient.a
+
+  rm -Rf \
+    ${HOME}/* \
+    /var/log/* \
+    /var/lib/apt/lists/*
 fi
-apt-get autoremove -y
-apt-get clean autoclean
-
-rm -Rf \
-  /usr/local/include/microhttpd.h \
-  /usr/local/lib/libmicrohttpd.* \
-  /usr/local/include/rapidjson \
-  /usr/local/include/mongo \
-  /usr/local/lib/libmongoclient.a
-
-rm -Rf \
-  ${HOME}/* \
-  /var/log/* \
-  /var/lib/apt/lists/*

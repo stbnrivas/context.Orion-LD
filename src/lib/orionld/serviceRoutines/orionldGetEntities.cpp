@@ -165,7 +165,6 @@ bool orionldGetEntities(ConnectionInfo* ciP)
 
     if (georelExtra != NULL)
     {
-      *georelExtra = 0;
       ++georelExtra;
       if ((strncmp(georelExtra, "minDistance==", 11) != 0) && (strncmp(georelExtra, "maxDistance==", 11) != 0))
       {
@@ -183,7 +182,7 @@ bool orionldGetEntities(ConnectionInfo* ciP)
     std::string  errorString;
 
     LM_TMP(("KZ: Filling a geometry scope with { geometry='%s', coordinates='%s', georel='%s' }", geometry, coordinates, georel));
-    if (scopeP->fill(ciP->apiVersion, geometry, coordinates, georel, &errorString) != 0)
+    if (scopeP->fill(NGSI_LD_V1, geometry, coordinates, georel, &errorString) != 0)
     {
       scopeP->release();
       delete scopeP;

@@ -306,10 +306,12 @@ bool processLocationAtEntityCreation
 
     if (!getGeoJson(caP, geoJson, errDetail, apiVersion))
     {
+      LM_E(("getGeoJson: %s", errDetail->c_str()));
       oe->fill(SccBadRequest, *errDetail, "BadRequest");
       return false;
     }
 
+    LM_TMP(("Got a locAttr: %s", locAttr->c_str()));
     *locAttr = caP->name;
   }
 

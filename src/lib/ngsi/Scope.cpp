@@ -111,7 +111,16 @@ int Scope::fill
   std::vector<std::string>    pointStringV;
   int                         points;
   std::vector<orion::Point*>  pointV;
+#ifdef ORIONLD
+  //
+  // NGSI-LD behaves more or less like NGSIv2, so, we fool the function a little here
+  //
+  // ApiVersion                  realApiVersion = apiVersion;
 
+  if (apiVersion == NGSI_LD_V1)
+    apiVersion = V2;
+#endif
+    
   type = (apiVersion == V1)? FIWARE_LOCATION : FIWARE_LOCATION_V2;
 
   //
@@ -199,6 +208,17 @@ int Scope::fill
     double                    latitude;
     double                    longitude;
 
+#ifdef ORIONLD
+    char* cP = (char*) pointStringV[ix].c_str();
+    if (*cP == '[')
+      ++cP;
+
+    if (cP[strlen(cP) - 1] == ']')
+      cP[strlen(cP) - 1] = 0;
+
+    pointStringV[ix] = cP;
+#endif
+
     coords = stringSplit(pointStringV[ix], ',', coordV);
 
     if (coords != 2)
@@ -211,6 +231,7 @@ int Scope::fill
 
     if (!str2double(coordV[0].c_str(), &latitude))
     {
+      LM_E(("coordV[0] == '%s' is invalid", coordV[0].c_str()));
       *errorStringP = "invalid coordinates";
       pointVectorRelease(pointV);
       pointV.clear();
@@ -219,6 +240,7 @@ int Scope::fill
 
     if (!str2double(coordV[1].c_str(), &longitude))
     {
+      LM_E(("coordV[1] == '%s' is invalid", coordV[1].c_str()));
       *errorStringP = "invalid coordinates";
       pointVectorRelease(pointV);
       pointV.clear();

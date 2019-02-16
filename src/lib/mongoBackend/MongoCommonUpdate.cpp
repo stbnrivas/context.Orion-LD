@@ -1086,6 +1086,8 @@ static bool addTriggeredSubscriptions_withCache
   std::string                       servicePath = (servicePathV.size() > 0)? servicePathV[0] : "";
   std::vector<CachedSubscription*>  subVec;
 
+  LM_TMP(("In addTriggeredSubscriptions_withCache"));
+
   cacheSemTake(__FUNCTION__, "match subs for notifications");
   subCacheMatch(tenant.c_str(), servicePath.c_str(), entityId.c_str(), entityType.c_str(), modifiedAttrs, &subVec);
   LM_T(LmtSubCache, ("%d subscriptions in cache match the update", subVec.size()));
@@ -1098,6 +1100,7 @@ static bool addTriggeredSubscriptions_withCache
     // Outdated subscriptions are skipped
     if (cSubP->expirationTime < now)
     {
+      LM_TMP(("KZ: Subscription %s is EXPIRED", cSubP->subscriptionId));
       LM_T(LmtSubCache, ("%s is EXPIRED (EXP:%lu, NOW:%lu, DIFF: %d)",
                          cSubP->subscriptionId, cSubP->expirationTime, now, now - cSubP->expirationTime));
       continue;
@@ -1106,6 +1109,7 @@ static bool addTriggeredSubscriptions_withCache
     // Status is inactive
     if (cSubP->status == STATUS_INACTIVE)
     {
+      LM_TMP(("KZ: Subscription %s is INACTIVE", cSubP->subscriptionId));
       LM_T(LmtSubCache, ("%s is INACTIVE", cSubP->subscriptionId));
       continue;
     }
@@ -1130,6 +1134,7 @@ static bool addTriggeredSubscriptions_withCache
     {
       if ((now - cSubP->lastNotificationTime) < cSubP->throttling)
       {
+        LM_TMP(("subscription '%s' ignored due to throttling", cSubP->subscriptionId));
         LM_T(LmtSubCache, ("subscription '%s' ignored due to throttling "
                            "(T: %lu, LNT: %lu, NOW: %lu, NOW-LNT: %lu, T: %lu)",
                            cSubP->subscriptionId,
@@ -1142,6 +1147,7 @@ static bool addTriggeredSubscriptions_withCache
       }
       else
       {
+        LM_TMP(("subscription '%s' NOT ignored due to throttling", cSubP->subscriptionId));
         LM_T(LmtSubCache, ("subscription '%s' NOT ignored due to throttling "
                            "(T: %lu, LNT: %lu, NOW: %lu, NOW-LNT: %lu, T: %lu)",
                            cSubP->subscriptionId,
@@ -1154,6 +1160,7 @@ static bool addTriggeredSubscriptions_withCache
     }
     else
     {
+      LM_TMP(("subscription '%s' NOT ignored due to throttling II", cSubP->subscriptionId));
       LM_T(LmtSubCache, ("subscription '%s' NOT ignored due to throttling II "
                          "(T: %lu, LNT: %lu, NOW: %lu, NOW-LNT: %lu, T: %lu)",
                          cSubP->subscriptionId,

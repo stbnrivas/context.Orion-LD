@@ -533,6 +533,14 @@ std::string ContextAttribute::getLocation(ApiVersion apiVersion) const
     {
       return LOCATION_WGS84;
     }
+
+#ifdef ORIONLD
+    if (type == "GeoProperty")
+    {
+      LM_TMP(("It's a GeoProperty - returning LOCATION_WGS84"));
+      return LOCATION_WGS84;
+    }
+#endif
   }
 
   return "";

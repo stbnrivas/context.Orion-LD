@@ -526,6 +526,40 @@ int Georel::parse(const char* in, std::string* errorString)
 
       minDistanceSet = true;
     }
+#ifdef ORIONLD
+    else if (strncmp(item, "maxDistance==", 13) == 0)
+    {
+      if (maxDistanceSet)
+      {
+        *errorString = "maxDistance present more than once";
+        return -1;
+      }
+
+      if (str2double(&item[13], &maxDistance) == false)
+      {
+        *errorString = "invalid number for maxDistance";
+        return -1;
+      }
+
+      maxDistanceSet = true;
+    }
+    else if (strncmp(item, "minDistance==", 13) == 0)
+    {
+      if (minDistanceSet)
+      {
+        *errorString = "minDistance present more than once";
+        return -1;
+      }
+
+      if (str2double(&item[13], &minDistance) == false)
+      {
+        *errorString = "invalid number for minDistance";
+        return -1;
+      }
+
+      minDistanceSet = true;
+    }
+#endif
     else
     {
       *errorString = "Invalid modifier in georel parameter";
@@ -630,6 +664,7 @@ int Geometry::parse(ApiVersion apiVersion, const char* in, std::string* errorStr
     }
     else
     {
+      LM_E(("items[ix] == '%s' - invalid selector in geometry specification", items[ix].c_str()));
       *errorString = "Invalid selector in geometry specification";
       return -1;
     }

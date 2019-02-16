@@ -493,10 +493,10 @@ static bool ktreeToSubscription(ConnectionInfo* ciP, ngsiv2::Subscription* subP)
   KjNode*                   contextNodeP              = NULL;
 
   // Default values
-  subP->attrsFormat = NGSI_LD_V1_KEYVALUES;
-  subP->descriptionProvided = false;
-  subP->expires = 0;
-  subP->throttling = 0;
+  subP->attrsFormat                        = NGSI_LD_V1_KEYVALUES;
+  subP->descriptionProvided                = false;
+  subP->expires                            = 0x7FFFFFFF;  // By default, it never expires
+  subP->throttling                         = 0;
   subP->subject.condition.expression.isSet = false;
   subP->notification.blacklist             = false;
   subP->notification.timesSent             = 0;
@@ -699,7 +699,9 @@ static bool ktreeToSubscription(ConnectionInfo* ciP, ngsiv2::Subscription* subP)
       STRING_CHECK(kNodeP, "Subscription::expires");
       DATETIME_CHECK(expiresP, "Subscription::expires");
 
+      LM_TMP(("KZ: Expires: %s", expiresP));
       subP->expires = parse8601Time(expiresP);
+      LM_TMP(("KZ: After parse8601Time: %d", subP->expires));
     }
     else if (SCOMPARE11(kNodeP->name, 't', 'h', 'r', 'o', 't', 't', 'l', 'i', 'n', 'g', 0))
     {

@@ -5,7 +5,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 TOKEN=$1
 REV=$2
-TEST=$3
+KREV=$3
+TEST=$4
 
 HOME='/opt'
 
@@ -71,6 +72,7 @@ TO_CLEAN=(
 )
 
 echo "Building ${REV}"
+echo "Using ${KREV} k* tools"
 cd ${HOME}
 
 apt-get -y update
@@ -99,17 +101,17 @@ make install
 
 ldconfig
 
-for kproj in kbase klog kalloc kjson
-do
-  git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/${kproj}.git ${HOME}/$kproj
+for kproj in kbase klog kalloc kjson; do
+    git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/${kproj}.git ${HOME}/${kproj}
+    cd ${HOME}/${kproj}
+    git checkout ${KREV}
 done
 
-for kproj in kbase klog kalloc kjson
-do
-  cd ${HOME}/$kproj
-  git checkout release/0.2
-  make
-  make install
+for kproj in kbase klog kalloc kjson; do
+    echo "building ${kproj}"
+    cd /opt/${kproj}
+    make
+    make install
 done
 
 if [ -n "${TEST}" ]; then

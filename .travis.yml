@@ -1,5 +1,7 @@
-if: type not IN (pull_request) and branch not IN(develop)
-
+if: type not IN (pull_request)
+branches:
+  except:
+  - develop
 dist: trusty
 sudo: false
 language: minimal
@@ -14,10 +16,8 @@ install: true
 before_script: git lfs pull
 script:
 - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
-- docker build --build-arg TOKEN=${TOKEN} --build-arg REV=${TRAVIS_COMMIT} --build-arg TEST=True -t ${IMAGE} -f docker/Dockerfile docker/
+- docker build --build-arg TOKEN=${TOKEN} --build-arg REV=${TRAVIS_COMMIT} --build-arg KREV='release/0.2' --build-arg TEST=True -t ${IMAGE} -f docker/Dockerfile docker/
 - docker push ${IMAGE}
-
-
 notifications:
   email:
     recipients:
@@ -26,5 +26,3 @@ notifications:
       - dmitrii.demin@fiware.org
     on_success: never
     on_failure: always
-
-

@@ -101,13 +101,15 @@ make install
 
 ldconfig
 
-for kproj in kbase klog kalloc kjson; do
+for kproj in kbase klog kalloc kjson
+do
     git clone https://gitlab-ci-token:${TOKEN}@gitlab.com/kzangeli/${kproj}.git ${HOME}/${kproj}
     cd ${HOME}/${kproj}
     git checkout ${KREV}
 done
 
-for kproj in kbase klog kalloc kjson; do
+for kproj in kbase klog kalloc kjson
+do
     echo "building ${kproj}"
     cd ${HOME}/${kproj}
     make

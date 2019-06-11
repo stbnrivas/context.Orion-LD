@@ -848,14 +848,12 @@ extern bool connectionAuth
 {
   try
   {
-    std::string authErr;
 
-    if (!connection->auth(db, user, password, authErr))
+    if (!connection->auth(BSON("mechanism"<<"SCRAM-SHA-1" << "db"<<db << "user"<<user << "password"<<password))
     {
       std::string msg = std::string("authentication fails: db=") + db +
           ", username='" + user + "'" +
-          ", password='*****'" +
-          ", auth_error='" + authErr + "'";
+          ", password='*****'" + "'";
 
       *err = "Database Startup Error (" + msg + ")";
       LM_E((err->c_str()));

@@ -846,11 +846,25 @@ extern bool connectionAuth
   std::string*        err
 )
 {
+  try {
+    connection->auth(BSON("mechanism"<<"SCRAM-SHA-1" << "db"<<db << "user"<<user << "password"<<password))
+  } catch ( const mongo::DBException &e ) {
+      std::string msg = std::string("authentication fails: db=") + db + ", username='" + user + "'" + ", password='*****'" + "'";
+      *err = "Database Startup Error (" + msg + ")";
+      LM_E((err->c_str()));
+      //return false;
+  }
   try
   {
-    if (!connection->auth(BSON("mechanism"<<"SCRAM-SHA-1" << "db"<<db << "user"<<user << "password"<<password)))
+    std::string authErr;
+
+    if (!connection->auth(db, user, password, authErr))
     {
-      std::string msg = std::string("authentication fails: db=") + db + ", username='" + user + "'" + ", password='*****'" + "'";
+      std::string msg = std::string("authentication fails: db=") + db +
+          ", username='" + user + "'" +
+          ", password='*****'" +
+          ", auth_error='" + authErr + "'";
+
       *err = "Database Startup Error (" + msg + ")";
       LM_E((err->c_str()));
 
